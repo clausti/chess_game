@@ -78,17 +78,27 @@ class Board
     end
   end
 
+  def move_piece(current_pos, end_pos)
+    piece = piece_at(current_pos)
+    #check valid move here if game does not
+    @grid[piece.position[0]][piece.position[1]] = nil
+    piece.move_to(end_pos)
+    @grid[end_pos[0]][end_pos[1]] = piece
+  end
+
   def valid_move?(current_pos, end_pos) #assumes end position is on board #question about the state of the board
     piece = piece_at(current_pos)
+    return false if piece.nil?
     return false unless piece.possible_move?(end_pos)
     # duplicating the board and the current game state to check the result of a proposed move
     #for pawns, check for enemies in diagonal moves
     #check and see if there is anything in the way
     #check and see if left in check for color of piece
+    true
   end
 
   def piece_at(pos)
-    #returns piece at position
+    @grid[pos[0]][pos[1]]
   end
 
 end

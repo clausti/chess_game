@@ -18,7 +18,7 @@ module SteppingPiece
   end
 
   def possible_move?(end_pos) #question about the way the piece CAN move in isolation
-    DELTAS.include?(move_delta(end_pos))
+    self.class::DELTAS.include?(move_delta(end_pos))
   end
 
 end
@@ -41,6 +41,9 @@ class Piece
     delta = [(end_x - start_x), (end_y - start_y)]
   end
 
+  def move_to(end_pos)
+    @position = end_pos
+  end
 
 end
 
@@ -108,7 +111,7 @@ class Castle < Piece
   include SlidingPiece
 
   def piece_moves?(delta)
-    if delta.include?(0) && !delta.all?(0)
+    if delta.include?(0) && !delta.all?{|element| element == 0}
       true
     else
       false
