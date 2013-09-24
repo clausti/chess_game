@@ -1,31 +1,3 @@
-module SlidingPiece
-
-  def move
-
-  end
-
-  def possible_move?(end_pos) #question about the way the piece CAN move in isolation
-    delta = move_delta(end_pos)
-    piece_moves?(delta)
-  end
-
-end
-
-module SteppingPiece
-
-  def move
-
-  end
-
-  def possible_move?(end_pos) #question about the way the piece CAN move in isolation
-    self.class::DELTAS.include?(move_delta(end_pos))
-  end
-
-end
-
-
-
-
 class Piece
   attr_accessor :position
   attr_reader :color
@@ -47,10 +19,24 @@ class Piece
 
 end
 
+class SlidingPiece < Piece
 
+  def possible_move?(end_pos) #question about the way the piece CAN move in isolation
+    delta = move_delta(end_pos)
+    piece_moves?(delta)
+  end
 
-class King < Piece
-  include SteppingPiece
+end
+
+class SteppingPiece < Piece
+
+  def possible_move?(end_pos) #question about the way the piece CAN move in isolation
+    self.class::DELTAS.include?(move_delta(end_pos))
+  end
+
+end
+
+class King < SteppingPiece
 
   DELTAS = [ [-1, -1],
              [-1,  0],
@@ -65,8 +51,7 @@ class King < Piece
 
 end
 
-class Queen < Piece
-  include SlidingPiece
+class Queen < SlidingPiece
 
   def piece_moves?(delta)
     if delta[0].abs == delta[1].abs
@@ -80,8 +65,7 @@ class Queen < Piece
 
 end
 
-class Knight < Piece
-  include SteppingPiece
+class Knight < SteppingPiece
 
   DELTAS = [ [ 2,  1],
              [-2, -1],
@@ -94,8 +78,7 @@ class Knight < Piece
 
 end
 
-class Bishop < Piece
-  include SlidingPiece
+class Bishop < SlidingPiece
 
   def piece_moves?(delta)
     if delta[0].abs == delta[1].abs
@@ -107,8 +90,7 @@ class Bishop < Piece
 
 end
 
-class Castle < Piece
-  include SlidingPiece
+class Castle < SlidingPiece
 
   def piece_moves?(delta)
     if delta.include?(0) && !delta.all?{|element| element == 0}

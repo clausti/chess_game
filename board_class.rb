@@ -90,10 +90,11 @@ class Board
     piece = piece_at(current_pos)
     return false if piece.nil?
     return false unless piece.possible_move?(end_pos)
-    # duplicating the board and the current game state to check the result of a proposed move
-    #for pawns, check for enemies in diagonal moves
-    #check and see if there is anything in the way
-    #check and see if left in check for color of piece
+    return false if path_blocked?(piece, end_pos)
+    if piece.is_a?(Pawn)
+      return false unless pawn_sees_enemy_on_diagonal?(piece, end_pos)
+    end
+    return false if enters_check?(piece, end_pos)
     true
   end
 
@@ -101,4 +102,30 @@ class Board
     @grid[pos[0]][pos[1]]
   end
 
+  def path_blocked?(piece, end_pos) #not inside classes bc classes don't know what's on the board
+    #look at intermediate squares and see if blocked by any piece (exclude end_pos)
+    return false if piece.is_a?(SteppingPiece)  #Knight and King
+
+    if piece.is_a?(SlidingPiece) #Queen, Bishop, Castle
+
+    end
+
+    if piece.is_a?(Pawn)
+      return true unless piece_at(end_pos).nil?
+    end
+    false
+  end
+
+  def enters_check?(piece, end_pos)
+
+  end
+
+  def pawn_sees_enemy_on_diagonal?(piece, end_pos)
+    move_delta = piece.move_delta(end_pos)
+    is_diagonal = (move_delta[1] != 0)
+    return true unless is_diagonal
+    return false if piece_at(end_pos).nil?
+    return true if (piece_at(end_pos).color != piece.color)
+    false
+  end
 end
