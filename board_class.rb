@@ -1,4 +1,5 @@
 require './pieces_classes.rb'
+require 'colorize'
 
 class Board
 
@@ -60,10 +61,20 @@ class Board
 
   def render
     @grid.each do |row|
-      row.each do |column|
-        print @grid[row][column].class
+      row.each do |square_contents|
+        if !square_contents.nil?
+          square_display = square_contents.class
+          text_color = square_contents.color
+          background_color = :cyan
+        else
+          square_display = "_______"
+          text_color = :default
+          background_color = :black
+        end
+
+        print "#{square_display}".center(7, " ").colorize(text_color).colorize( :background => background_color) + "|"
       end
-      puts
+      puts "\n\n"
     end
   end
 
