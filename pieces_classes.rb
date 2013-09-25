@@ -31,7 +31,7 @@ class SlidingPiece < Piece
     start_x, start_y = @position
     end_x, end_y = end_pos
     delta_x, delta_y = move_delta(end_pos)
-    p move_vector(end_pos)
+
     case move_vector(end_pos)
       when :n
         ((end_x+1)...start_x).each do |x_coord|
