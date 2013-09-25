@@ -55,7 +55,7 @@ class Board
     end
 
     initial_positions.each do |position, piece_class|
-      @grid[position[0]][position[1]] = piece_class.new(color, position)
+      @grid[position[0]][position[1]] = piece_class.new(color)
     end
   end
 
@@ -81,18 +81,17 @@ class Board
   def move_piece(current_pos, end_pos)
     piece = piece_at(current_pos)
     #check valid move here if game does not
-    @grid[piece.position[0]][piece.position[1]] = nil
-    piece.move_to(end_pos)
+    @grid[current_pos[0]][current_pos[1]] = nil
     @grid[end_pos[0]][end_pos[1]] = piece
   end
 
   def valid_move?(current_pos, end_pos) #assumes end position is on board #question about the state of the board
     piece = piece_at(current_pos)
     return false if piece.nil?
-    return false unless piece.possible_move?(end_pos)
-    return false if path_blocked?(piece, end_pos)
+    return false unless piece.possible_move?(current_pos, end_pos)
+    return false if path_blocked?(current_pos, end_pos)
     if piece.is_a?(Pawn)
-      return false unless pawn_sees_enemy_on_diagonal?(piece, end_pos)
+      return false unless pawn_sees_enemy_on_diagonal?(piece, current_pos, end_pos)
     end
     return false if enters_check?(piece, end_pos)
     true
@@ -102,29 +101,33 @@ class Board
     @grid[pos[0]][pos[1]]
   end
 
-  def path_blocked?(piece, end_pos) #not inside classes bc classes don't know what's on the board
-    #look at intermediate squares and see if blocked by any piece (exclude end_pos)
+  def path_blocked?(current_pos, end_pos)
+    #(exclude end_pos)
+    piece = piece_at(current_pos)
     return false if piece.is_a?(SteppingPiece)  #Knight and King
-
     if piece.is_a?(SlidingPiece) #Queen, Bishop, Castle
-      path = piece.path(end_pos)
+      path = piece.path(current_pos, end_pos)
       path.each do |coord|
         return true unless piece_at(coord).nil?
       end
     end
-
-    if piece.is_a?(Pawn)
+    if piece.is_a?(Pawn) #Pawns
       return true unless piece_at(end_pos).nil?
     end
     false
   end
 
   def enters_check?(piece, end_pos)
-
+    #create duplicate board with proposed move,
+    # pass that board to in_check?
   end
 
-  def pawn_sees_enemy_on_diagonal?(piece, end_pos)
-    move_delta = piece.move_delta(end_pos)
+  def in_check?(color, board = self)
+    #looks at a board (self for real board, dup for hypothetical board)
+  end
+
+  def pawn_sees_enemy_on_diagonal?(piece, current_pos, end_pos)
+    move_delta = piece.move_delta(current_pos, end_pos)
     is_diagonal = (move_delta[1] != 0)
     return true unless is_diagonal
     return false if piece_at(end_pos).nil?

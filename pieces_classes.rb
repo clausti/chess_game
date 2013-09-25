@@ -1,38 +1,32 @@
 class Piece
-  attr_accessor :position
   attr_reader :color
 
-  def initialize(color, starting_position)
+  def initialize(color)
     @color = color
-    @position = starting_position
   end
 
-  def move_delta(end_pos)
-    start_x, start_y = @position
+  def move_delta(start_pos, end_pos)
+    start_x, start_y = start_pos
     end_x, end_y = end_pos
     delta = [(end_x - start_x), (end_y - start_y)]
-  end
-
-  def move_to(end_pos)
-    @position = end_pos
   end
 
 end
 
 class SlidingPiece < Piece
 
-  def possible_move?(end_pos) #question about the way the piece CAN move in isolation
-    delta = move_delta(end_pos)
+  def possible_move?(start_pos, end_pos) #question about the way the piece CAN move in isolation
+    delta = move_delta(start_pos, end_pos)
     piece_moves?(delta)
   end
 
-  def path(end_pos) #do not want the landing square
+  def path(start_pos, end_pos) #do not want the landing square
     path = []
-    start_x, start_y = @position
+    start_x, start_y = start_pos
     end_x, end_y = end_pos
-    delta_x, delta_y = move_delta(end_pos)
+    delta_x, delta_y = move_delta(start_pos, end_pos)
 
-    case move_vector(end_pos)
+    case move_vector(start_pos, end_pos)
       when :n
         ((end_x+1)...start_x).each do |x_coord|
           path << [x_coord, start_y]
@@ -69,8 +63,8 @@ class SlidingPiece < Piece
     path
   end
 
-  def move_vector(end_pos) #assumes move is valid
-    delta_x, delta_y = move_delta(end_pos)
+  def move_vector(start_pos, end_pos) #assumes move is valid
+    delta_x, delta_y = move_delta(start_pos, end_pos)
     return :n  if delta_x  < 0 && delta_y == 0
     return :s  if delta_x  > 0 && delta_y == 0
     return :e  if delta_x == 0 && delta_y  > 0
@@ -85,8 +79,8 @@ end
 
 class SteppingPiece < Piece
 
-  def possible_move?(end_pos) #question about the way the piece CAN move in isolation
-    self.class::DELTAS.include?(move_delta(end_pos))
+  def possible_move?(start_pos, end_pos) #question about the way the piece CAN move in isolation
+    self.class::DELTAS.include?(move_delta(start_pos, end_pos))
   end
 
 end
@@ -101,8 +95,6 @@ class King < SteppingPiece
              [ 1,  0],
              [ 1, -1],
              [ 0, -1] ]
-
-  #array of move deltas
 
 end
 
@@ -173,16 +165,16 @@ class Pawn < Piece
 
   DELTAS_BLACK_FIRST = [[ 2,0]]
 
- def possible_move?(end_pos)
+ def possible_move?(start_pos, end_pos)
    deltas = []
    if @color == :white
      deltas = DELTAS_WHITE
-     deltas += DELTAS_WHITE_FIRST if @position[0] == 6
+     deltas += DELTAS_WHITE_FIRST if start_pos[0] == 6
    else
      deltas = DELTAS_BLACK
-     deltas += DELTAS_BLACK_FIRST if @position[0] == 1
+     deltas += DELTAS_BLACK_FIRST if start_pos[0] == 1
    end
-   deltas.include?(move_delta(end_pos))
+   deltas.include?(move_delta(start_pos, end_pos))
  end
 
 end
