@@ -128,6 +128,16 @@ class Board
     piece_at(current_pos).color == end_square_contents.color
   end
 
+  def pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
+    piece = piece_at(current_pos)
+    move_delta = piece.move_delta(current_pos, end_pos)
+    is_diagonal = (move_delta[1] != 0)
+    return true unless is_diagonal
+    return false if piece_at(end_pos).nil?
+    return true if (piece_at(end_pos).color != piece.color)
+    false
+  end
+
   def enters_check?(start_pos, end_pos)#assumes move is possible and not blocked
     color = piece_at(start_pos).color
     hyp_board = self.dup
@@ -147,23 +157,6 @@ class Board
     false
   end
 
-  def in_checkmate?(color)
-    iterate_through_grid do |square_contents, row_index, col_index|
-      next if square_contents.nil?
-      next if square_contents.color != color
-      return false if any_valid_moves?([row_index, col_index])
-    end
-    #return true if !in_check?(color)#technically, this is stalemate, so maybe it should return false
-    true
-  end
-
-  def any_valid_moves?(position)
-    iterate_through_grid do |square_contents, row_index, col_index|
-      return true if valid_move?(position, [row_index, col_index])
-    end
-    false
-  end
-
   def king_position(color)
     iterate_through_grid do |square_contents, row_index, col_index|
       if square_contents.class == King && square_contents.color == color
@@ -173,22 +166,40 @@ class Board
     nil
   end
 
+  def in_checkmate?(color)
+    return false unless in_check?(color)
+    return false if color_any_valid_moves?(color)
+    true
+  end
+
+  def in_stalemate?(color)
+    return false if in_check?(color)
+    return false if color_any_valid_moves?(color)
+    true
+  end
+
+  def color_any_valid_moves?(color)
+    iterate_through_grid do |square_contents, row_index, col_index|
+      next if square_contents.nil?
+      next if square_contents.color != color
+      return true if piece_any_valid_moves?([row_index, col_index])
+    end
+    false
+  end
+
+  def piece_any_valid_moves?(position)
+    iterate_through_grid do |square_contents, row_index, col_index|
+      return true if valid_move?(position, [row_index, col_index])
+    end
+    false
+  end
+
   def iterate_through_grid(&code_block) #will still take implicit code block
     @grid.each_with_index do |row, row_index|
       row.each_with_index do |square_contents, col_index|
         code_block.call(square_contents, row_index, col_index)
       end
     end
-  end
-
-  def pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
-    piece = piece_at(current_pos)
-    move_delta = piece.move_delta(current_pos, end_pos)
-    is_diagonal = (move_delta[1] != 0)
-    return true unless is_diagonal
-    return false if piece_at(end_pos).nil?
-    return true if (piece_at(end_pos).color != piece.color)
-    false
   end
 
   def dup

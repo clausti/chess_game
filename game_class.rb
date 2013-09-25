@@ -8,6 +8,7 @@ class ChessGame
   def initialize
     @board = Board.new
     @active_player = :white
+    play
   end
 
   def play
@@ -19,7 +20,11 @@ class ChessGame
       one_turn
     end
     winner, loser = checkmate
-    puts "#{loser.to_s.capitalize} is in checkmate! #{winner.to_s.capitalize} wins!"
+    if checkmate
+      puts "#{loser.to_s.capitalize} is in checkmate! #{winner.to_s.capitalize} wins!"
+    else
+      puts "Stalemate. You both lose. :P"
+    end
   end
 
   def one_turn
@@ -44,8 +49,8 @@ class ChessGame
   end
 
   def stalemate?
-    #only one valid move per player, no way to escape loop
-    #will only ever be true or false bc if stalemate, stalemate for everyone
+    return true if @board.in_stalemate?(:black)
+    return true if @board.in_stalemate?(:white)
     false
   end
 
