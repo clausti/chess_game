@@ -77,7 +77,7 @@ class Board
       puts "\n\n"
     end
   end
-  
+
   def piece_at(pos)
     @grid[pos[0]][pos[1]]
   end
@@ -117,19 +117,33 @@ class Board
     end
     false
   end
-  
+
   def destination_is_friendly?(current_pos, ending_pos) #cla
     piece_at(current_pos).color == piece_at(ending_pos).color
   end
 
   def enters_check?(piece, end_pos)
-    #create duplicate board with proposed move,
-    #!!need deep dup of grid
+    #create duplicate board #!!need deep dup of grid
+    #move piece on duped board
     # pass that board to in_check?
   end
 
   def in_check?(color, board = self)
     #looks at a board (self for real board, dup for hypothetical board)
+    king_pos = king_position(color)
+
+    @grid.each_with_index do |row, row_index|
+      row.each_with_index do |square_contents, col_index|
+        next if square_contents.nil?
+        next if square_contents.color == color
+        return true if valid_move?([row_index, col_index], king_pos)
+      end
+    end
+    false
+  end
+
+  def king_position(color)
+
   end
 
   def pawn_sees_enemy_on_diagonal?(piece, current_pos, end_pos)
