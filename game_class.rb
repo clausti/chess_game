@@ -23,7 +23,7 @@ class ChessGame
   end
 
   def one_turn
-    "#{@active_player.to_s.capitalize}'s turn!"
+    puts "#{@active_player.to_s.capitalize}'s turn!"
     puts "You're in check!" if @board.in_check?(@active_player)
     begin
       start_pos, end_pos = player_move
@@ -64,12 +64,12 @@ class ChessGame
   end
 
   def ask_coord_from_player #should really be in HumanPlayer class.
-    print "Move from? (format: row, column)"
+    print "Move from? format: row, column  "
     start_pos = gets.chomp.split(", ").map {|digit| digit.to_i}
     raise InputError, "Not valid start coordinates" unless (start_pos.is_a?(Array) && start_pos.length == 2)
     raise InputError, "Not valid start coordinates" unless start_pos.all? {|ord| ord >= 0 && ord < 8}
 
-    print "Move to? (format: row, column)"
+    print "Move to? format: row, column  "
     end_pos = gets.chomp.split(", ").map {|digit| digit.to_i}
     raise InputError, "Not valid end coordinates" unless (end_pos.is_a?(Array) && end_pos.length == 2)
     raise InputError, "Not valid end coordinates" unless end_pos.all? {|ord| ord >= 0 && ord < 8}
