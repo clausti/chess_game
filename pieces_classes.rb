@@ -26,6 +26,61 @@ class SlidingPiece < Piece
     piece_moves?(delta)
   end
 
+  def path(end_pos) #do not want the landing square
+    path = []
+    start_x, start_y = @position
+    end_x, end_y = end_pos
+    delta_x, delta_y = move_delta(end_pos)
+    p move_vector(end_pos)
+    case move_vector(end_pos)
+      when :n
+        ((end_x+1)...start_x).each do |x_coord|
+          path << [x_coord, start_y]
+        end
+      when :s
+        ((start_x+1)...end_x).each do |x_coord|
+          path << [x_coord, start_y]
+        end
+      when :e
+        ((start_y+1)...end_y).each do |y_coord|
+          path << [start_x, y_coord]
+        end
+      when :w
+        ((end_y+1)...start_y).each do |y_coord|
+          path << [start_x, y_coord]
+        end
+      when :ne
+        (1...delta_x.abs).each do |diff|
+          path << [start_x-diff, start_y+diff]
+        end
+      when :se
+        (1...delta_x.abs).each do |diff|
+          path << [start_x+diff, start_y+diff]
+        end
+      when :sw
+        (1...delta_x.abs).each do |diff|
+          path << [start_x+diff, start_y-diff]
+        end
+      when :nw
+        (1...delta_x.abs).each do |diff|
+          path << [start_x-diff, start_y-diff]
+        end
+    end
+    path
+  end
+
+  def move_vector(end_pos) #assumes move is valid
+    delta_x, delta_y = move_delta(end_pos)
+    return :n  if delta_x  < 0 && delta_y == 0
+    return :s  if delta_x  > 0 && delta_y == 0
+    return :e  if delta_x == 0 && delta_y  > 0
+    return :w  if delta_x == 0 && delta_y  < 0
+    return :ne if delta_x  < 0 && delta_y  > 0
+    return :se if delta_x  > 0 && delta_y  > 0
+    return :sw if delta_x  > 0 && delta_y  < 0
+    return :nw if delta_x  < 0 && delta_y  < 0
+  end
+
 end
 
 class SteppingPiece < Piece
@@ -51,6 +106,19 @@ class King < SteppingPiece
 
 end
 
+class Knight < SteppingPiece
+
+  DELTAS = [ [ 2,  1],
+             [-2, -1],
+             [ 1,  2],
+             [-1, -2],
+             [ 1, -2],
+             [-1,  2],
+             [ 2, -1],
+             [-2,  1] ]
+
+end
+
 class Queen < SlidingPiece
 
   def piece_moves?(delta)
@@ -65,18 +133,6 @@ class Queen < SlidingPiece
 
 end
 
-class Knight < SteppingPiece
-
-  DELTAS = [ [ 2,  1],
-             [-2, -1],
-             [ 1,  2],
-             [-1, -2],
-             [ 1, -2],
-             [-1,  2],
-             [ 2, -1],
-             [-2,  1] ]
-
-end
 
 class Bishop < SlidingPiece
 
@@ -128,6 +184,5 @@ class Pawn < Piece
    end
    deltas.include?(move_delta(end_pos))
  end
-
 
 end

@@ -107,7 +107,10 @@ class Board
     return false if piece.is_a?(SteppingPiece)  #Knight and King
 
     if piece.is_a?(SlidingPiece) #Queen, Bishop, Castle
+      move_delta = piece.move_delta(end_pos)
 
+
+      #path method inside slidingpiece
     end
 
     if piece.is_a?(Pawn)
