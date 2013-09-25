@@ -66,6 +66,8 @@ class ChessGame
   def ask_coord_from_player #should really be in HumanPlayer class.
     print "Move from? format: row, column  "
     start_pos = gets.chomp.split(", ").map {|digit| digit.to_i}
+    raise InputError, "There's no piece there!" if @board.piece_at(start_pos).nil?
+    raise InputError, "That's not your piece!" unless @board.piece_at(start_pos).color == @active_player
     raise InputError, "Not valid start coordinates" unless (start_pos.is_a?(Array) && start_pos.length == 2)
     raise InputError, "Not valid start coordinates" unless start_pos.all? {|ord| ord >= 0 && ord < 8}
 
