@@ -119,6 +119,7 @@ class Board
 
   def enters_check?(piece, end_pos)
     #create duplicate board with proposed move,
+    #!!need deep dup of grid
     # pass that board to in_check?
   end
 
