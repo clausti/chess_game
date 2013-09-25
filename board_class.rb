@@ -62,7 +62,7 @@ class Board
   def render
     @grid.each do |row|
       row.each do |square_contents|
-        if !square_contents.nil?
+        if square_contents #cla
           square_display = square_contents.class
           text_color = square_contents.color
           background_color = :cyan
@@ -77,6 +77,10 @@ class Board
       puts "\n\n"
     end
   end
+  
+  def piece_at(pos)
+    @grid[pos[0]][pos[1]]
+  end
 
   def move_piece(current_pos, end_pos)
     piece = piece_at(current_pos)
@@ -90,15 +94,12 @@ class Board
     return false if piece.nil?
     return false unless piece.possible_move?(current_pos, end_pos)
     return false if path_blocked?(current_pos, end_pos)
+    return false if destination_is_friendly?(current_pos, end_pos) #cla
     if piece.is_a?(Pawn)
       return false unless pawn_sees_enemy_on_diagonal?(piece, current_pos, end_pos)
     end
     return false if enters_check?(piece, end_pos)
     true
-  end
-
-  def piece_at(pos)
-    @grid[pos[0]][pos[1]]
   end
 
   def path_blocked?(current_pos, end_pos)
@@ -115,6 +116,10 @@ class Board
       return true unless piece_at(end_pos).nil?
     end
     false
+  end
+  
+  def destination_is_friendly?(current_pos, ending_pos) #cla
+    piece_at(current_pos).color == piece_at(ending_pos).color
   end
 
   def enters_check?(piece, end_pos)
