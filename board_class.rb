@@ -139,45 +139,46 @@ class Board
   def in_check?(color)#only asks about current state of board (i.e. no move validation)
     king_pos = king_position(color)
     return true if king_pos.nil?
-    @grid.each_with_index do |row, row_index|
-      row.each_with_index do |square_contents, col_index|
-        next if square_contents.nil?
-        next if square_contents.color == color
-        return true if valid_move?([row_index, col_index], king_pos)
-      end
+    iterate_through_grid do |square_contents, row_index, col_index|
+      next if square_contents.nil?
+      next if square_contents.color == color
+      return true if valid_move?([row_index, col_index], king_pos)
     end
     false
   end
 
   def in_checkmate?(color)
-    @grid.each_with_index do |row, row_index|
-      row.each_with_index do |square_contents, col_index|
-        next if square_contents.nil?
-        next if square_contents.color != color
-        return false if any_valid_moves?([row_index, col_index])
-      end
+    iterate_through_grid do |square_contents, row_index, col_index|
+      next if square_contents.nil?
+      next if square_contents.color != color
+      return false if any_valid_moves?([row_index, col_index])
     end
+    #return true if !in_check?(color)#technically, this is stalemate, so maybe it should return false
     true
   end
 
   def any_valid_moves?(position)
-    @grid.each_with_index do |row, row_index|
-      row.each_with_index do |square_contents, col_index|
-        return true if valid_move?(position, [row_index, col_index])
-      end
+    iterate_through_grid do |square_contents, row_index, col_index|
+      return true if valid_move?(position, [row_index, col_index])
     end
     false
   end
 
   def king_position(color)
-    @grid.each_with_index do |row, row_index|
-      row.each_with_index do |square_contents, col_index|
-        if square_contents.class == King && square_contents.color == color
-          return [row_index, col_index]
-        end
+    iterate_through_grid do |square_contents, row_index, col_index|
+      if square_contents.class == King && square_contents.color == color
+        return [row_index, col_index]
       end
     end
     nil
+  end
+
+  def iterate_through_grid(&code_block) #will still take implicit code block
+    @grid.each_with_index do |row, row_index|
+      row.each_with_index do |square_contents, col_index|
+        code_block.call(square_contents, row_index, col_index)
+      end
+    end
   end
 
   def pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
