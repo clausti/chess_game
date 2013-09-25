@@ -116,7 +116,7 @@ class Queen < SlidingPiece
   def piece_moves?(delta)
     if delta[0].abs == delta[1].abs
       true
-    elsif delta.include?(0) && !delta.all?(0)
+    elsif delta.include?(0) && !delta.all? {|el| el == 0 }
       true
     else
       false
@@ -174,6 +174,7 @@ class Pawn < Piece
      deltas = DELTAS_BLACK
      deltas += DELTAS_BLACK_FIRST if start_pos[0] == 1
    end
+
    deltas.include?(move_delta(start_pos, end_pos))
  end
 

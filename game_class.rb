@@ -4,23 +4,40 @@ require './pieces_classes.rb'
 
 class ChessGame
 
+  def initialize
+    @board = Board.new
+  end
 
-  #verify end position on board, raise exception if not
+
 
 
   def play
-    player_move
+    @board.render
 
-
+    begin
+     player_move
+   rescue StandardError => err
+     puts err.message
+     retry
+   end
+   move = player_move
+   @board.move_piece(move[0], move[1])
   end
 
   def player_move
     #ask player where to move using x,y coordinates
-    #ask board if input move is valid
-    @board.valid_move?(start_pos, end_pos)
+    #verify end position on board, raise exception if not
+
+
+    print "Move from?"
+    start_pos = gets.chomp.split(", ").map {|digit| digit.to_i}
+    print "Move to?"
+    end_pos = gets.chomp.split(", ").map {|digit| digit.to_i}
+    valid_move = @board.valid_move?(start_pos, end_pos)
+    raise StandardError "That's not a valid move." unless valid_move
     #if move is not valid ask again, exception handling?
 
-    #tell board to execute move
+    move = [start_pos, end_pos]
   end
 
 end

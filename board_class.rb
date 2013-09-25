@@ -60,7 +60,10 @@ class Board
   end
 
   def render
-    @grid.each do |row|
+    puts "   0       1       2       3       4       5       6       7    ".rjust(72, " ")
+
+    @grid.each_with_index do |row, row_idx|
+      print "Row: #{row_idx}  "
       row.each do |square_contents|
         if square_contents #cla
           square_display = square_contents.class
@@ -95,10 +98,10 @@ class Board
     return false unless piece.possible_move?(current_pos, end_pos)
     return false if path_blocked?(current_pos, end_pos)
     return false if destination_is_friendly?(current_pos, end_pos) #cla
-    if piece.is_a?(Pawn)
-      return false unless pawn_sees_enemy_on_diagonal?(piece, current_pos, end_pos)
+    if piece.is_a?(Pawn) && !pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
+      return false
     end
-    return false if enters_check?(piece, end_pos)
+    return false if enters_check?(current_pos, end_pos)
     true
   end
 
@@ -113,25 +116,29 @@ class Board
       end
     end
     if piece.is_a?(Pawn) #Pawns
+      return false if current_pos[1] != end_pos[1] #diagonal paths never "blocked"
       return true unless piece_at(end_pos).nil?
     end
     false
   end
 
   def destination_is_friendly?(current_pos, ending_pos) #cla
-    piece_at(current_pos).color == piece_at(ending_pos).color
+    end_square_contents = piece_at(ending_pos)
+    return false if end_square_contents.nil?
+    piece_at(current_pos).color == end_square_contents.color
   end
 
-  def enters_check?(piece, end_pos)
-    #create duplicate board #!!need deep dup of grid
-    #move piece on duped board
-    # pass that board to in_check?
+  def enters_check?(start_pos, end_pos)#assumes move is possible and not blocked
+    color = piece_at(start_pos).color
+    hyp_board = self.dup
+    hyp_board.move_piece(start_pos, end_pos)
+    return true if hyp_board.in_check?(color)
+    false
   end
 
-  def in_check?(color, board = self)
-    #looks at a board (self for real board, dup for hypothetical board)
+  def in_check?(color)#only asks about current state of board (i.e. no move validation)
     king_pos = king_position(color)
-
+    return true if king_pos.nil?
     @grid.each_with_index do |row, row_index|
       row.each_with_index do |square_contents, col_index|
         next if square_contents.nil?
@@ -142,11 +149,39 @@ class Board
     false
   end
 
-  def king_position(color)
-
+  def in_checkmate?(color)
+    @grid.each_with_index do |row, row_index|
+      row.each_with_index do |square_contents, col_index|
+        next if square_contents.nil?
+        next if square_contents.color != color
+        return false if any_valid_moves?([row_index, col_index])
+      end
+    end
+    true
   end
 
-  def pawn_sees_enemy_on_diagonal?(piece, current_pos, end_pos)
+  def any_valid_moves?(position)
+    @grid.each_with_index do |row, row_index|
+      row.each_with_index do |square_contents, col_index|
+        return true if valid_move?(position, [row_index, col_index])
+      end
+    end
+    false
+  end
+
+  def king_position(color)
+    @grid.each_with_index do |row, row_index|
+      row.each_with_index do |square_contents, col_index|
+        if square_contents.class == King && square_contents.color == color
+          return [row_index, col_index]
+        end
+      end
+    end
+    nil
+  end
+
+  def pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
+    piece = piece_at(current_pos)
     move_delta = piece.move_delta(current_pos, end_pos)
     is_diagonal = (move_delta[1] != 0)
     return true unless is_diagonal
@@ -154,4 +189,21 @@ class Board
     return true if (piece_at(end_pos).color != piece.color)
     false
   end
+
+  def dup
+    hypothetical_board = Board.new # using dup here causes an infinite loop!!! (duploop!!)
+    hypothetical_board.grid = self.two_d_dup(@grid)
+    hypothetical_board
+  end
+
+  def two_d_dup(two_d_array)
+    duped_array = []
+    two_d_array.each do |element|
+      duped_array << element.dup
+    end
+    duped_array
+  end
+
+protected
+    attr_accessor :grid
 end
