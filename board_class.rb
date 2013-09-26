@@ -60,10 +60,9 @@ class Board
   end
 
   def render
-    puts "   0       1       2       3       4       5       6       7    ".rjust(72, " ")
-
+    puts
     @grid.each_with_index do |row, row_idx|
-      print "Row: #{row_idx}  "
+      print "Row: #{8 - row_idx}  "
       row.each do |square_contents|
         if square_contents #cla
           square_display = square_contents.class
@@ -79,6 +78,8 @@ class Board
       end
       puts "\n\n"
     end
+    puts "   a       b       c       d       e       f       g       h    ".rjust(72, " ")
+    puts
   end
 
   def piece_at(pos)
