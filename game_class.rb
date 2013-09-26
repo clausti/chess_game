@@ -70,7 +70,7 @@ class ChessGame
   end
 
   def change_players
-    @active_player = (@active_player == @players.first) ? @players.first : @players.last
+    @active_player = (@active_player == @players.first) ? @players.last : @players.first
   end
 
 end
