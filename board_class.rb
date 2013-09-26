@@ -43,23 +43,6 @@ class Board
     populate_board
   end
 
-  def populate_board
-    pieces_one_color(:white)
-    pieces_one_color(:black)
-  end
-
-  def pieces_one_color(color)
-    if color == :white
-      initial_positions = INITIAL_WHITE
-    elsif color == :black
-      initial_positions = INITIAL_BLACK
-    end
-
-    initial_positions.each do |position, piece_class|
-      @grid[position[0]][position[1]] = piece_class.new(color)
-    end
-  end
-
   def render
     puts
     @grid.each_with_index do |row, row_idx|
@@ -106,60 +89,6 @@ class Board
     true
   end
 
-  def valid_move?(current_pos, end_pos) #assumes end position is on board #question about the state of the board
-    piece = piece_at(current_pos)
-    return false if piece.nil?
-    return false unless piece.possible_move?(current_pos, end_pos)
-    return false if path_blocked?(current_pos, end_pos)
-    return false if destination_is_friendly?(current_pos, end_pos) #cla
-    if piece.is_a?(Pawn) && !pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
-      return false
-    end
-    return false if enters_check?(current_pos, end_pos)
-    true
-  end
-
-  def path_blocked?(current_pos, end_pos)
-    #(exclude end_pos)
-    piece = piece_at(current_pos)
-    return false if piece.is_a?(SteppingPiece)  #Knight and King
-    if piece.is_a?(SlidingPiece) #Queen, Bishop, Castle
-      path = piece.path(current_pos, end_pos)
-      path.each do |coord|
-        return true unless piece_at(coord).nil?
-      end
-    end
-    if piece.is_a?(Pawn) #Pawns
-      return false if current_pos[1] != end_pos[1] #diagonal paths never "blocked"
-      return true unless piece_at(end_pos).nil?
-    end
-    false
-  end
-
-  def destination_is_friendly?(current_pos, ending_pos) #cla
-    end_square_contents = piece_at(ending_pos)
-    return false if end_square_contents.nil?
-    piece_at(current_pos).color == end_square_contents.color
-  end
-
-  def pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
-    piece = piece_at(current_pos)
-    move_delta = piece.move_delta(current_pos, end_pos)
-    is_diagonal = (move_delta[1] != 0)
-    return true unless is_diagonal
-    return false if piece_at(end_pos).nil?
-    return true if (piece_at(end_pos).color != piece.color)
-    false
-  end
-
-  def enters_check?(start_pos, end_pos)#assumes move is possible and not blocked
-    color = piece_at(start_pos).color
-    hyp_board = self.dup
-    hyp_board.move_piece(start_pos, end_pos)
-    return true if hyp_board.in_check?(color)
-    false
-  end
-
   def in_check?(color)#only asks about current state of board (i.e. no move validation)
     king_pos = king_position(color)
     return true if king_pos.nil?
@@ -169,15 +98,6 @@ class Board
       return true if valid_move?([row_index, col_index], king_pos)
     end
     false
-  end
-
-  def king_position(color)
-    iterate_through_grid do |square_contents, row_index, col_index|
-      if square_contents.class == King && square_contents.color == color
-        return [row_index, col_index]
-      end
-    end
-    nil
   end
 
   def in_checkmate?(color)
@@ -192,44 +112,127 @@ class Board
     true
   end
 
-  def color_any_valid_moves?(color)
-    iterate_through_grid do |square_contents, row_index, col_index|
-      next if square_contents.nil?
-      next if square_contents.color != color
-      return true if piece_any_valid_moves?([row_index, col_index])
-    end
-    false
-  end
-
-  def piece_any_valid_moves?(position)
-    iterate_through_grid do |square_contents, row_index, col_index|
-      return true if valid_move?(position, [row_index, col_index])
-    end
-    false
-  end
-
-  def iterate_through_grid(&code_block) #will still take implicit code block
-    @grid.each_with_index do |row, row_index|
-      row.each_with_index do |square_contents, col_index|
-        code_block.call(square_contents, row_index, col_index)
-      end
-    end
-  end
-
-  def dup
-    hypothetical_board = Board.new # using dup here causes an infinite loop!!! (duploop!!)
-    hypothetical_board.grid = self.two_d_dup(@grid)
-    hypothetical_board
-  end
-
-  def two_d_dup(two_d_array)
-    duped_array = []
-    two_d_array.each do |element|
-      duped_array << element.dup
-    end
-    duped_array
-  end
 
 protected
     attr_accessor :grid
+
+private
+    def populate_board
+      pieces_one_color(:white)
+      pieces_one_color(:black)
+    end
+
+    def pieces_one_color(color)
+      if color == :white
+        initial_positions = INITIAL_WHITE
+      elsif color == :black
+        initial_positions = INITIAL_BLACK
+      end
+
+      initial_positions.each do |position, piece_class|
+        @grid[position[0]][position[1]] = piece_class.new(color)
+      end
+    end
+
+    def valid_move?(current_pos, end_pos) #assumes end position is on board #question about the state of the board
+      piece = piece_at(current_pos)
+      return false if piece.nil?
+      return false unless piece.possible_move?(current_pos, end_pos)
+      return false if path_blocked?(current_pos, end_pos)
+      return false if destination_is_friendly?(current_pos, end_pos) #cla
+      if piece.is_a?(Pawn) && !pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
+        return false
+      end
+      return false if enters_check?(current_pos, end_pos)
+      true
+    end
+
+    def path_blocked?(current_pos, end_pos)
+      #(exclude end_pos)
+      piece = piece_at(current_pos)
+      return false if piece.is_a?(SteppingPiece)  #Knight and King
+      if piece.is_a?(SlidingPiece) #Queen, Bishop, Castle
+        path = piece.path(current_pos, end_pos)
+        path.each do |coord|
+          return true unless piece_at(coord).nil?
+        end
+      end
+      if piece.is_a?(Pawn) #Pawns
+        return false if current_pos[1] != end_pos[1] #diagonal paths never "blocked"
+        return true unless piece_at(end_pos).nil?
+      end
+      false
+    end
+
+    def destination_is_friendly?(current_pos, ending_pos) #cla
+      end_square_contents = piece_at(ending_pos)
+      return false if end_square_contents.nil?
+      piece_at(current_pos).color == end_square_contents.color
+    end
+
+    def pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
+      piece = piece_at(current_pos)
+      move_delta = piece.move_delta(current_pos, end_pos)
+      is_diagonal = (move_delta[1] != 0)
+      return true unless is_diagonal
+      return false if piece_at(end_pos).nil?
+      return true if (piece_at(end_pos).color != piece.color)
+      false
+    end
+
+    def enters_check?(start_pos, end_pos)#assumes move is possible and not blocked
+      color = piece_at(start_pos).color
+      hyp_board = dup
+      hyp_board.move_piece(start_pos, end_pos)
+      return true if hyp_board.in_check?(color)
+      false
+    end
+
+    def king_position(color)
+      iterate_through_grid do |square_contents, row_index, col_index|
+        if square_contents.class == King && square_contents.color == color
+          return [row_index, col_index]
+        end
+      end
+      nil
+    end
+
+    def color_any_valid_moves?(color)
+      iterate_through_grid do |square_contents, row_index, col_index|
+        next if square_contents.nil?
+        next if square_contents.color != color
+        return true if piece_any_valid_moves?([row_index, col_index])
+      end
+      false
+    end
+
+    def piece_any_valid_moves?(position)
+      iterate_through_grid do |square_contents, row_index, col_index|
+        return true if valid_move?(position, [row_index, col_index])
+      end
+      false
+    end
+
+    def iterate_through_grid(&code_block) #will still take implicit code block
+      @grid.each_with_index do |row, row_index|
+        row.each_with_index do |square_contents, col_index|
+          code_block.call(square_contents, row_index, col_index)
+        end
+      end
+    end
+
+    def dup
+      hypothetical_board = Board.new # using dup here causes an infinite loop!!! (duploop!!)
+      hypothetical_board.grid = two_d_dup(@grid)
+      hypothetical_board
+    end
+
+    def two_d_dup(two_d_array)
+      duped_array = []
+      two_d_array.each do |element|
+        duped_array << element.dup
+      end
+      duped_array
+    end
+
 end

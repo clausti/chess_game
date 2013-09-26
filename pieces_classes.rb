@@ -63,17 +63,18 @@ class SlidingPiece < Piece
     path
   end
 
-  def move_vector(start_pos, end_pos) #assumes move is valid
-    delta_x, delta_y = move_delta(start_pos, end_pos)
-    return :n  if delta_x  < 0 && delta_y == 0
-    return :s  if delta_x  > 0 && delta_y == 0
-    return :e  if delta_x == 0 && delta_y  > 0
-    return :w  if delta_x == 0 && delta_y  < 0
-    return :ne if delta_x  < 0 && delta_y  > 0
-    return :se if delta_x  > 0 && delta_y  > 0
-    return :sw if delta_x  > 0 && delta_y  < 0
-    return :nw if delta_x  < 0 && delta_y  < 0
-  end
+  private
+    def move_vector(start_pos, end_pos) #assumes move is valid
+      delta_x, delta_y = move_delta(start_pos, end_pos)
+      return :n  if delta_x  < 0 && delta_y == 0
+      return :s  if delta_x  > 0 && delta_y == 0
+      return :e  if delta_x == 0 && delta_y  > 0
+      return :w  if delta_x == 0 && delta_y  < 0
+      return :ne if delta_x  < 0 && delta_y  > 0
+      return :se if delta_x  > 0 && delta_y  > 0
+      return :sw if delta_x  > 0 && delta_y  < 0
+      return :nw if delta_x  < 0 && delta_y  < 0
+    end
 
 end
 
@@ -174,7 +175,6 @@ class Pawn < Piece
      deltas = DELTAS_BLACK
      deltas += DELTAS_BLACK_FIRST if start_pos[0] == 1
    end
-
    deltas.include?(move_delta(start_pos, end_pos))
  end
 

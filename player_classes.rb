@@ -19,7 +19,7 @@ class HumanPlayer
                       "g" => 6,
                       "h" => 7 }
 
-  attr_accessor :color
+  attr_reader :color
 
   def initialize(color)
     @color = color
@@ -45,11 +45,12 @@ class HumanPlayer
     [start_pos, end_pos]
   end
 
-  def convert_player_input_to_coords(input)
-    input = input.downcase.reverse.split('')
-    row, column = input
-    row = ROW_NOTATION[row]
-    column = COLUMN_NOTATION[column]
-    [row, column]
-  end
+  private
+    def convert_player_input_to_coords(input)
+      input = input.downcase.reverse.split('')
+      row, column = input
+      row = ROW_NOTATION[row]
+      column = COLUMN_NOTATION[column]
+      [row, column]
+    end
 end
