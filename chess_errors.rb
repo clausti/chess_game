@@ -2,6 +2,6 @@ class InputError < StandardError
 
 end
 
-class InvalidMove < StandardError
+class InvalidMoveError < StandardError
 
 end

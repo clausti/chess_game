@@ -1,5 +1,6 @@
 require './pieces_classes.rb'
 require 'colorize'
+require './chess_errors.rb'
 
 class Board
 
@@ -91,6 +92,18 @@ class Board
     #check valid move here if game does not
     @grid[current_pos[0]][current_pos[1]] = nil
     @grid[end_pos[0]][end_pos[1]] = piece
+  end
+
+  def valid_move_from_player?(current_pos, end_pos)
+    piece = piece_at(current_pos)
+    raise InvalidMoveError, "Your piece can't move that way!\n\n" unless piece.possible_move?(current_pos, end_pos)
+    raise InvalidMoveError, "There's a piece in your way.\n\n" if path_blocked?(current_pos, end_pos)
+    raise InvalidMoveError, "You can't capture your own piece!\n\n" if destination_is_friendly?(current_pos, end_pos)
+    if piece.is_a?(Pawn) && !pawn_sees_enemy_on_diagonal?(current_pos, end_pos)
+      raise InvalidMoveError, "Pawn can only make a diagonal move to capture.\n\n"
+    end
+    raise InvalidMoveError, "You can't move into check.\n\n" if enters_check?(current_pos, end_pos)
+    true
   end
 
   def valid_move?(current_pos, end_pos) #assumes end position is on board #question about the state of the board

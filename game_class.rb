@@ -51,7 +51,7 @@ class ChessGame
     puts "You're in check!" if @board.in_check?(@active_player)
     begin
       start_pos, end_pos = player_move
-    rescue InvalidMove => err
+    rescue InvalidMoveError => err
       puts err.message
       retry
     end
@@ -81,8 +81,7 @@ class ChessGame
       retry
     end
 
-    valid_move = @board.valid_move?(start_pos, end_pos)
-    raise InvalidMove, "That's not a valid move." unless valid_move
+    valid_move = @board.valid_move_from_player?(start_pos, end_pos)
 
     [start_pos, end_pos]
   end
