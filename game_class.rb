@@ -7,8 +7,9 @@ class ChessGame
 
   def initialize
     @board = Board.new
-    @players = [HumanPlayer.new(:white), HumanPlayer.new(:black)]
-    @active_player = @players.first
+    @players = { :white => HumanPlayer.new(:white), 
+                 :black => HumanPlayer.new(:black) }
+    @active_player = @players[:white]
     play
   end
 
@@ -70,7 +71,7 @@ class ChessGame
   end
 
   def change_players
-    @active_player = (@active_player == @players.first) ? @players.last : @players.first
+    @active_player = (@active_player == @players[:white]) ? @players[:black] : @players[:white]
   end
 
 end
